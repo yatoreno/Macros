@@ -26,10 +26,10 @@ class File:
     # key_dict1 - это раздел в конфиге
     # key_dict2 - это ключ, который нужен для получения значения
     @staticmethod
-    def rewrite(directory, key_dict1, key_dict2, new_hotkey):
+    def rewrite(directory, key_dict1, key_dict2, new_hotkey: str):
         # directory = File.resource_path(directory)
         dictionary = File.read_file(directory)
         dictionary[key_dict1][key_dict2] = new_hotkey
         with open(directory, "w", encoding='utf-8') as f:
             json.dump(dictionary, f, indent=4, ensure_ascii=False)
-        print(f'Перезапись хоткея {new_hotkey}, {directory}')
+        print(f'Перезапись хоткея на {new_hotkey} ключа {key_dict2}, директории {directory}')

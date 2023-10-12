@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from keyboard import add_hotkey, unhook_all
@@ -5,10 +7,11 @@ from PySide6.QtWidgets import QMainWindow, QApplication, QTabWidget
 import sys
 from pyautogui import click
 
-from my_code.All_macros import Macros_right_click, Macros_left_click, Macros_bow_shoot, Macros_scroll_slots
+from my_code.All_macros import Macros_right_click, Macros_left_click, Macros_bow_shoot, Macros_scroll_slots, \
+    Macros_eat_command, Macros_lvl_command
 from my_code.FileWork import File
 from my_code.auto_join import check_restart
-from my_code.all_tabs import tab_hot_keys, tab_join_coords
+from my_code.all_tabs import tab_hot_keys, tab_join_coords, tab_logs
 
 
 class MainWindow(QMainWindow):
@@ -36,27 +39,44 @@ class MainWindow(QMainWindow):
         self.tab_hot_keys = tab_hot_keys()
         self.tab_hot_keys.signal_refresh_hot_keys.connect(self.add_all_hotkeys)
         self.tab_hot_keys.signal_start_thread_auto_join.connect(self.run_check_restart)
+        self.tab_hot_keys.signal_command_eat.connect(self.start_command_eat)
+        self.tab_hot_keys.signal_command_lvl.connect(self.start_command_lvl)
 
         # Создание таба с настройками координат
         self.tab_join_coords = tab_join_coords()
 
-        # Добавление двух табов
-        self.tabwidget.addTab(self.tab_hot_keys, 'Hot_Keys')
-        self.tabwidget.addTab(self.tab_join_coords, 'Coords')
+        # Создание таба с логами
+        self.tab_logs = tab_logs()
+
+        # Добавление табов
+        self.tabwidget.addTab(self.tab_hot_keys, 'Основа')
+        self.tabwidget.addTab(self.tab_join_coords, 'Настройки')
+        self.tabwidget.addTab(self.tab_logs, 'Логи')
 
         # Функция добавления всех хоткеев
+
         self.add_all_hotkeys()
+
         # Функция создания всех потоков
         self.create_all_thread()
+
+        # Сообщение для логов
+        self.add_logs_text(f'[Main] {datetime.now().strftime("%H:%M:%S / %d.%m.%Y")} - Программа запущена')
 
     def debag_screeonshot_on_coords_tab(self):
         pixmap2 = QPixmap(str('img2.png'))
         self.tab_join_coords.image_compare.setPixmap(pixmap2)
 
+    def add_logs_text(self, new_text):
+
+        self.tab_logs.label_logs.append(new_text)
+
     def create_all_thread(self):
         print('ALL_TH: Создание всех потоков')
         # Поток на проверку рестартов (Сравнения одной картинки с другой)
         self.thread_check_restart = check_restart()
+        # Конект для логов
+        self.thread_check_restart.signal_add_logs.connect(self.add_logs_text)
         self.thread_check_restart.signal_stop_all_macros.connect(self.stop_all_macro)
         # Конектиться для изменения картинки в табе с кордами, при работе потока
         self.thread_check_restart.signal_image.connect(self.debag_screeonshot_on_coords_tab)
@@ -70,6 +90,10 @@ class MainWindow(QMainWindow):
         self.thread_scroll_slots = Macros_scroll_slots()
         # Конект для выключения всех потоков, когда все слоты будут сломаны
         self.thread_scroll_slots.signal_stop_all_macros.connect(self.stop_all_macro)
+        # Поток для команды /eat
+        self.thread_command_eat = Macros_eat_command()
+        # Поток для команды /lvl
+        self.thread_command_lvl = Macros_lvl_command()
         print('ALL_TH: Все потоки были созданы')
 
     def run_check_restart(self):
@@ -84,23 +108,44 @@ class MainWindow(QMainWindow):
 
     def add_all_hotkeys(self):
         print('Hot_Key: Подгрузка хоткеев')
+        var_count_hotkey = 0
         # Нужно, чтобы хоткеи не стакались и норм обновлялись
         unhook_all()
         try:
-            if File.read_file('config.json')["keyboards"]["right_click"] != 'None':
+            if not self.tab_hot_keys.right_click_checkbox.isChecked():
                 add_hotkey(File.read_file('config.json')["keyboards"]["right_click"], self.start_right_click)
-            if File.read_file('config.json')["keyboards"]["left_click"] != 'None':
+                var_count_hotkey += 1
+            if not self.tab_hot_keys.left_click_checkbox.isChecked():
                 add_hotkey(File.read_file('config.json')["keyboards"]["left_click"], self.start_left_click)
-            if File.read_file('config.json')["keyboards"]["bow_shoot"] != 'None':
+                var_count_hotkey += 1
+            if not self.tab_hot_keys.bow_shoot_checkbox.isChecked():
                 add_hotkey(File.read_file('config.json')["keyboards"]["bow_shoot"], self.start_bow_shoot)
-            if File.read_file('config.json')["keyboards"]["scroll_slots"] != 'None':
+                var_count_hotkey += 1
+            if not self.tab_hot_keys.scroll_slots_checkbox.isChecked():
                 add_hotkey(File.read_file('config.json')["keyboards"]["scroll_slots"], self.start_scroll_slots)
+                var_count_hotkey += 1
             print('Hot_Key: Хоткеи загрузились')
-            self.tab_hot_keys.warning_label.setText(' ')
+            self.tab_hot_keys.warning_label.setText(f'Загружено хоткеев - {var_count_hotkey}')
         except:
             unhook_all()
             print('Hot_Key: Хоткеи не загрузились (ОШИБКА)')
             self.tab_hot_keys.warning_label.setText('ОШИБКА ПРИ ЗАГРУЗКЕ ХОТКЕЕВ')
+
+    def start_command_eat(self):
+        if not self.thread_command_eat.isRunning():
+            print('MACROS: Начинаю юзать команду /eat')
+            self.thread_command_eat.start()
+        elif self.thread_command_eat.isRunning():
+            print('MACROS: Начинаю юзать команду /eat')
+            self.thread_command_eat.terminate()
+
+    def start_command_lvl(self):
+        if not self.thread_command_lvl.isRunning():
+            print('MACROS: Начинаю юзать команду /lvl')
+            self.thread_command_lvl.start()
+        elif self.thread_command_lvl.isRunning():
+            print('MACROS: Начинаю юзать команду /lvl')
+            self.thread_command_lvl.terminate()
 
     def start_right_click(self):
         if not self.thread_right_click.isRunning():

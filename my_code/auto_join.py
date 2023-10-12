@@ -1,4 +1,6 @@
 import pyautogui
+import datetime
+
 from PySide6.QtCore import QThread, Signal
 from my_code.FileWork import File
 from my_code.screen_window import screen
@@ -12,6 +14,8 @@ class check_restart(QThread):
     signal_image = Signal()
 
     signal_start_macro_after_join = Signal()
+
+    signal_add_logs = Signal(str)
 
     def __init__(self, parent=None):
         super(check_restart, self).__init__(parent)
@@ -32,6 +36,8 @@ class check_restart(QThread):
             # Отправляет сигнал на устоновку скрина
             self.signal_image.emit()
             if screen.difference_images():
+                print(f'TH-auto_join: {datetime.datetime.now()} - [Рестарт] Замечены одинаковые картинки')
+                self.signal_add_logs.emit(f'TH-auto_join: [Рестарт] - {datetime.datetime.now().strftime("%H:%M:%S")}')
                 self.signal_stop_all_macros.emit('True')
                 auto_join()
                 # Сигнал для запуска макросов, которые были запущены до рестарта
