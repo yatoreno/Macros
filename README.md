@@ -8,14 +8,14 @@
 2) Гибкая настройка
 3) Авто-вход в игру
 4) Защита от поломки предметов при фарме (Работает, когда запущена функция скрола слотов)
+5) Макрос на команды на /lvl и /eat
 
 Для работы понадобится (Их скачать можно в релизе):
 1) start.exe
 2) config.json
 
-![image](https://github.com/yatoreno/Macros/assets/85769618/068895d5-d4d6-478c-9f22-6f170fd1dcb6)
-![image](https://github.com/yatoreno/Macros/assets/85769618/0230c5ab-4e9d-4ac3-8d78-df3702a6e165)
-
+![1](https://github.com/yatoreno/Macros/assets/85769618/40684c77-54cd-4e68-98e7-38d95f1e4a9d)
+![2](https://github.com/yatoreno/Macros/assets/85769618/1c297afd-554e-42e3-baa6-5c36a081d3fd)
 
 upd: Приложение разрабатывается полным любителем. Попрошу без камней в лицо.
 
