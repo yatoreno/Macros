@@ -1,6 +1,8 @@
+import keyboard
+
 from PySide6.QtCore import QThread, Signal
 from my_code.FileWork import File
-from pyautogui import tripleClick, click, mouseUp, mouseDown
+from pyautogui import tripleClick, click, mouseUp, mouseDown, position
 from keyboard import send, write
 
 from my_code.screen_window import screen
@@ -29,7 +31,7 @@ class Macros_bow_shoot(QThread):
     def run(self):
         while True:
             mouseDown(button='right')
-            sleep(1.1)
+            sleep(int(File.read_file('config.json')["macros_settings"]["bow_shoot_delay"]))
             mouseUp(button='right')
 
 
@@ -37,7 +39,7 @@ class Macros_eat_command(QThread):
 
     def run(self):
         while True:
-            sleep(60)
+            sleep(20)
             send('t')
             sleep(0.5)
             write("/eat", delay=0.1)
@@ -49,7 +51,7 @@ class Macros_lvl_command(QThread):
 
     def run(self):
         while True:
-            sleep(1200)
+            sleep(950)
             send('t')
             sleep(0.5)
             write("/lvl", delay=0.1)
@@ -85,3 +87,16 @@ class Macros_scroll_slots(QThread):
                 print(f'MACROS A-J: Слоты, которые не используются - {list_slots}')
                 continue
             sleep(int(File.read_file(self.directory)["settings"]["time_on_slot"]))
+
+
+class Macros_coord_click(QThread):
+
+    signal_change_text = Signal(str)
+
+    def run(self):
+        while True:
+            if keyboard.is_pressed('k'):
+                print(position())
+                self.signal_change_text.emit(f'{position()}')
+            sleep(0.2)
+
