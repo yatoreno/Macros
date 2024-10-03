@@ -33,7 +33,7 @@ class check_restart(QThread):
                               name='img2')
             sleep(0.25)
             print('TH-auto_join: Работаю')
-            # Отправляет сигнал на устоновку скрина
+            # Отправляет сигнал на установку скрина
             self.signal_image.emit()
             if screen.difference_images():
                 print(f'TH-auto_join: {datetime.datetime.now()} - [Рестарт] Замечены одинаковые картинки')
@@ -51,11 +51,11 @@ class auto_join:
         self.join()
 
     def custom_click(self):  # Обычный клик
-        sleep(1)
+        sleep(0.5)
         pyautogui.mouseDown(button='left')
-        sleep(1)
+        sleep(0.5)
         pyautogui.mouseUp(button='left')
-        sleep(1)
+        sleep(0.5)
 
     def join(self):  # АВТОПЕРЕЗАХОД
         print('Аuto_Join: Начинаю заходить на сервер')
@@ -65,7 +65,7 @@ class auto_join:
         pyautogui.moveTo(int(File.coords("join_coords", 'refresh', self.directory)[0]),
                          int(File.coords("join_coords", 'refresh', self.directory)[1]))
         self.custom_click()
-        print('Аuto_Join: Начинаю ждать', int(File.read_file('config.json')["settings"]["time_on_slot"]), 'секунд')
+        print('Аuto_Join: Начинаю ждать', int(File.read_file('config.json')["settings"]["time_on_join"]), 'секунд(ы)')
         sleep(int(File.read_file('config.json')["settings"]["time_on_join"]))
         self.custom_click()
         pyautogui.moveTo(int(File.coords("join_coords", 'server', self.directory)[0]),
@@ -75,5 +75,5 @@ class auto_join:
                          int(File.coords("join_coords", 'join', self.directory)[1]))
         self.custom_click()
         print('Аuto_Join: Ожидаю 15 сек, пока осуществляется вход на сервер')
-        sleep(15)
+        sleep(10)
         print('Аuto_Join: Вход выполнен')

@@ -1,18 +1,21 @@
+import keyboard
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QWidget, QLineEdit, QPushButton, QLabel, QTextEdit, QCheckBox
+from PySide6.QtWidgets import QWidget, QLineEdit, QPushButton, QLabel, QTextEdit, QCheckBox, QComboBox
 from my_code.FileWork import File
 
 from my_code.screen_window import screen
+from my_code.Style import Style
 
 
 class tab_hot_keys(QWidget):
-
     signal_start_thread_auto_join = Signal()
     signal_refresh_hot_keys = Signal()
 
     signal_command_eat = Signal()
     signal_command_lvl = Signal()
+
+    signal_off_macro = Signal()
 
     def __init__(self, parent=None):
         super(tab_hot_keys, self).__init__(parent)
@@ -40,21 +43,17 @@ class tab_hot_keys(QWidget):
         self.label_right_click.setText('Кнопка для ПКМ:')
 
         # Чекбоксы для команд, которые будут работать в своем потоке
-
         self.command_eat_checkbox = QCheckBox(self)
         self.command_eat_checkbox.move(5, 195)
-        self.command_eat_checkbox.setText('Прописывать команду /eat раз в минуту')
+        self.command_eat_checkbox.setText('Прописывать команду /eat раз в 20 сек')
         self.command_eat_checkbox.clicked.connect(self.signal_command_eat.emit)
-
 
         self.command_lvl_checkbox = QCheckBox(self)
         self.command_lvl_checkbox.move(5, 215)
-        self.command_lvl_checkbox.setText('Прописывать команду /lvl раз в 20 минут')
+        self.command_lvl_checkbox.setText('Прописывать команду /lvl раз в 15 минут')
         self.command_lvl_checkbox.clicked.connect(self.signal_command_lvl.emit)
 
-
         # Чекбоксы для работы нумпадов
-
         self.left_click_checkbox = QCheckBox(self)
         self.left_click_checkbox.move(140, 30)
         self.left_click_checkbox.clicked.connect(self.block_hotkeys_with_checkbox)
@@ -71,17 +70,7 @@ class tab_hot_keys(QWidget):
         self.right_click_checkbox.move(140, 150)
         self.right_click_checkbox.clicked.connect(self.block_hotkeys_with_checkbox)
 
-        # Стиль для чекбоксов
-        self.blockStyle = '''
-                QLineEdit {
-                    color: rgb(255, 255, 255);
-                    background-color: rgb(165, 165, 165);
-                }
-            '''
-
-
         # Все HotKeys settings Qlabel (Нужны чисто для информации)
-
         self.label_count_slots = QLabel(self)
         self.label_count_slots.move(200, 10)
         self.label_count_slots.setText('Кол-во слотов:')
@@ -104,7 +93,7 @@ class tab_hot_keys(QWidget):
 
         # Кнопка для обновления макросов (В случае ошибки и т.д.)
         self.refresh_hotkey_btn = QPushButton(self)
-        self.refresh_hotkey_btn.setText('Обновить Горячии кнопки')
+        self.refresh_hotkey_btn.setText("Обновить HotKey's")
         self.refresh_hotkey_btn.move(25, 270)
         # Отправляет сигнал для запуска функции в основном классе на обновление хоткеев
         self.refresh_hotkey_btn.clicked.connect(self.signal_refresh_hot_keys.emit)
@@ -116,40 +105,39 @@ class tab_hot_keys(QWidget):
         # Отправляет сигнал для запуска функции в основном классе
         self.auto_join_thread_btn.clicked.connect(self.signal_start_thread_auto_join.emit)
 
-        # ЛАЙН Едиты для настройки ХОТКЕЕВ
-        self.left_click_edit = QLineEdit(self)
+        # Настройка ХОТКЕЕВ
+        self.left_click_edit = QPushButton(self)
         self.left_click_edit.setText(File.read_file(self.directory)[self.key_dict1]["left_click"])
-        self.left_click_edit.move(5, 25)
-        self.left_click_edit.textChanged.connect(
-            lambda: File.rewrite(self.directory, self.key_dict1, 'left_click', new_hotkey=self.left_click_edit.text()))
+        self.left_click_edit.setGeometry(5, 25, 130, 22)
+        self.left_click_edit.setStyleSheet(Style.pushbutton_style)
+        self.left_click_edit.clicked.connect(self.Change_Hotkey_LeftClick)
 
-        self.scroll_slots_edit = QLineEdit(self)
+        self.scroll_slots_edit = QPushButton(self)
         self.scroll_slots_edit.setText(File.read_file(self.directory)[self.key_dict1]["scroll_slots"])
-        self.scroll_slots_edit.move(5, 65)
-        self.scroll_slots_edit.textChanged.connect(
-            lambda: File.rewrite(self.directory, self.key_dict1, 'scroll_slots',
-                                 new_hotkey=self.scroll_slots_edit.text()))
+        self.scroll_slots_edit.setGeometry(5, 65, 130, 22)
+        self.scroll_slots_edit.clicked.connect(self.Change_Hotkey_ScrollSlots)
 
-        self.bow_shoot_edit = QLineEdit(self)
+        self.bow_shoot_edit = QPushButton(self)
         self.bow_shoot_edit.setText(File.read_file(self.directory)[self.key_dict1]["bow_shoot"])
-        self.bow_shoot_edit.move(5, 105)
-        self.bow_shoot_edit.textChanged.connect(
-            lambda: File.rewrite(self.directory, self.key_dict1, 'bow_shoot', new_hotkey=self.bow_shoot_edit.text()))
+        self.bow_shoot_edit.setGeometry(5, 105, 130, 22)
+        self.bow_shoot_edit.clicked.connect(self.Change_Hotkey_BowShoot)
 
-        self.right_click_edit = QLineEdit(self)
+        self.right_click_edit = QPushButton(self)
         self.right_click_edit.setText(File.read_file(self.directory)[self.key_dict1]["right_click"])
-        self.right_click_edit.move(5, 145)
-        self.right_click_edit.textChanged.connect(
-            lambda: File.rewrite(self.directory, self.key_dict1, 'right_click',
-                                 new_hotkey=self.right_click_edit.text()))
+        self.right_click_edit.setGeometry(5, 145, 130, 22)
+        self.right_click_edit.clicked.connect(self.Change_Hotkey_RightClick)
 
-        # ЛАЙН Едиты для настройки макросов
-        self.count_slots_edit = QLineEdit(self)
-        self.count_slots_edit.setText(File.read_file(self.directory)[self.key_dict2]["count_slots"])
+        # ЛАЙН Едиты и комбобокс для настройки макросов
+        self.count_slots_edit = QComboBox(self)
         self.count_slots_edit.move(200, 25)
-        self.count_slots_edit.textChanged.connect(
+        self.count_slots_edit.setEditable(False)
+        for i in range(1, 10):
+            self.count_slots_edit.addItem(f"{i}")
+        self.count_slots_edit.setCurrentIndex(int(File.read_file(self.directory)[self.key_dict2]["count_slots"]) - 1)
+        self.count_slots_edit.setMaxVisibleItems(9)
+        self.count_slots_edit.currentTextChanged.connect(
             lambda: File.rewrite(self.directory, self.key_dict2, 'count_slots',
-                                 new_hotkey=self.count_slots_edit.text()))
+                                 new_hotkey=self.count_slots_edit.currentText()))
 
         self.time_on_slot_edit = QLineEdit(self)
         self.time_on_slot_edit.setText(File.read_file(self.directory)[self.key_dict2]["time_on_slot"])
@@ -171,20 +159,61 @@ class tab_hot_keys(QWidget):
         # Загрузка чекбоксов
         self.load_checkboxs()
 
+    # Набор из 4 однообразных функций для смены хоткеев через кнопку (Для каждой отдельно -_-)
+    def Change_Hotkey_LeftClick(self):
+        self.left_click_edit.setDown(1)
+        x = keyboard.read_key()
+        if x == 'backspace':
+            File.rewrite(self.directory, self.key_dict1, 'left_click', new_hotkey='None')
+        else:
+            File.rewrite(self.directory, self.key_dict1, 'left_click', new_hotkey=x)
+        self.left_click_edit.setDown(0)
+        self.left_click_edit.setText(File.read_file(self.directory)[self.key_dict1]["left_click"])
+
+    def Change_Hotkey_ScrollSlots(self):
+        self.scroll_slots_edit.setDown(1)
+        x = keyboard.read_key()
+        if x == 'backspace':
+            File.rewrite(self.directory, self.key_dict1, 'scroll_slots', new_hotkey='None')
+        else:
+            File.rewrite(self.directory, self.key_dict1, 'scroll_slots', new_hotkey=x)
+        self.scroll_slots_edit.setDown(0)
+        self.scroll_slots_edit.setText(File.read_file(self.directory)[self.key_dict1]["scroll_slots"])
+
+    def Change_Hotkey_BowShoot(self):
+        self.bow_shoot_edit.setDown(1)
+        x = keyboard.read_key()
+        if x == 'backspace':
+            File.rewrite(self.directory, self.key_dict1, 'bow_shoot', new_hotkey='None')
+        else:
+            File.rewrite(self.directory, self.key_dict1, 'bow_shoot', new_hotkey=x)
+        self.bow_shoot_edit.setDown(0)
+        self.bow_shoot_edit.setText(File.read_file(self.directory)[self.key_dict1]["bow_shoot"])
+
+    def Change_Hotkey_RightClick(self):
+        self.right_click_edit.setDown(1)
+        x = keyboard.read_key()
+        if x == 'backspace':
+            File.rewrite(self.directory, self.key_dict1, 'right_click', new_hotkey='None')
+        else:
+            File.rewrite(self.directory, self.key_dict1, 'right_click', new_hotkey=x)
+        self.right_click_edit.setDown(0)
+        self.right_click_edit.setText(File.read_file(self.directory)[self.key_dict1]["right_click"])
+
     # Загрузка состояния чекбоксов из конфига
     def load_checkboxs(self):
         if File.read_file('config.json')["chekboxs"]["left_click_checkbox"]:
             self.left_click_checkbox.setChecked(1)
-            self.left_click_edit.setStyleSheet(self.blockStyle)
+            self.left_click_edit.setStyleSheet(Style.pushbutton_block_style)
         if File.read_file('config.json')["chekboxs"]["scroll_slots_checkbox"]:
             self.scroll_slots_checkbox.setChecked(1)
-            self.scroll_slots_edit.setStyleSheet(self.blockStyle)
+            self.scroll_slots_edit.setStyleSheet(Style.pushbutton_block_style)
         if File.read_file('config.json')["chekboxs"]["bow_shoot_checkbox"]:
             self.bow_shoot_checkbox.setChecked(1)
-            self.bow_shoot_edit.setStyleSheet(self.blockStyle)
+            self.bow_shoot_edit.setStyleSheet(Style.pushbutton_block_style)
         if File.read_file('config.json')["chekboxs"]["right_click_checkbox"]:
             self.right_click_checkbox.setChecked(1)
-            self.right_click_edit.setStyleSheet(self.blockStyle)
+            self.right_click_edit.setStyleSheet(Style.pushbutton_block_style)
 
         # if File.read_file('config.json')["chekboxs"]["command_eat_checkbox"]:
         #     self.command_eat_checkbox.setChecked(1)
@@ -199,29 +228,25 @@ class tab_hot_keys(QWidget):
 
     # Блочим хоткеи по чекбоксам (Выглядит как высер хех)
     def block_hotkeys_with_checkbox(self):
-        unblockStyle = '''
-                QLineEdit {
-                    color: rgb(0, 0, 0);
-                    background-color: rgb(255, 255, 255);
-                }
-            '''
         self.signal_refresh_hot_keys.emit()
         if self.left_click_checkbox.isChecked():
-            self.left_click_edit.setStyleSheet(self.blockStyle)
+            self.left_click_edit.setStyleSheet(Style.pushbutton_block_style)
         else:
-            self.left_click_edit.setStyleSheet(unblockStyle)
+            self.left_click_edit.setStyleSheet(Style.pushbutton_UNblock_style)
         if self.scroll_slots_checkbox.isChecked():
-            self.scroll_slots_edit.setStyleSheet(self.blockStyle)
+            self.scroll_slots_edit.setStyleSheet(Style.pushbutton_block_style)
         else:
-            self.scroll_slots_edit.setStyleSheet(unblockStyle)
+            self.scroll_slots_edit.setStyleSheet(Style.pushbutton_UNblock_style)
         if self.bow_shoot_checkbox.isChecked():
-            self.bow_shoot_edit.setStyleSheet(self.blockStyle)
+            self.bow_shoot_edit.setStyleSheet(Style.pushbutton_block_style)
         else:
-            self.bow_shoot_edit.setStyleSheet(unblockStyle)
+            self.bow_shoot_edit.setStyleSheet(Style.pushbutton_UNblock_style)
         if self.right_click_checkbox.isChecked():
-            self.right_click_edit.setStyleSheet(self.blockStyle)
+            self.right_click_edit.setStyleSheet(Style.pushbutton_block_style)
         else:
-            self.right_click_edit.setStyleSheet(unblockStyle)
+            self.right_click_edit.setStyleSheet(Style.pushbutton_UNblock_style)
+        # Выключение всех макросов при переключении чекбоксов
+        self.signal_off_macro.emit()
         # Перезапись в конфиге чекбоксов
         File.rewrite(self.directory, self.key_dict3, 'left_click_checkbox',
                      new_hotkey=self.left_click_checkbox.isChecked())
@@ -232,8 +257,10 @@ class tab_hot_keys(QWidget):
         File.rewrite(self.directory, self.key_dict3, 'right_click_checkbox',
                      new_hotkey=self.right_click_checkbox.isChecked())
 
+
 ##########################
 class tab_join_coords(QWidget):
+    signal_click_coord = Signal()
 
     def __init__(self, parent=None):
         super(tab_join_coords, self).__init__(parent)
@@ -245,9 +272,14 @@ class tab_join_coords(QWidget):
         # Ключ для скриншотов
         self.key_dict2 = 'screens_coords'
 
-        self.Test_line_edit = QLineEdit(self)
-        self.Test_line_edit.move(245, 140)
+        # Чтобы показывать координаты курсора
+        self.Check_coords_line_edit = QLineEdit(self)
+        self.Check_coords_line_edit.move(245, 140)
 
+        self.checkbox_coords = QCheckBox(self)
+        self.checkbox_coords.move(245, 120)
+        self.checkbox_coords.setText('Пишет Координаты курсора при нажатие "K"')
+        self.checkbox_coords.clicked.connect(self.signal_click_coord.emit)
         # Текст над едитами нужен для информации
 
         self.label_coords_image_go_to_menu = QLabel(self)

@@ -8,11 +8,11 @@ import sys
 from pyautogui import click
 
 from my_code.All_macros import Macros_right_click, Macros_left_click, Macros_bow_shoot, Macros_scroll_slots, \
-    Macros_eat_command, Macros_lvl_command
+    Macros_eat_command, Macros_lvl_command, Macros_coord_click
 from my_code.FileWork import File
 from my_code.auto_join import check_restart
 from my_code.all_tabs import tab_hot_keys, tab_join_coords, tab_logs
-
+from my_code.Style import Style
 
 class MainWindow(QMainWindow):
 
@@ -24,6 +24,7 @@ class MainWindow(QMainWindow):
         self.left_click = False
         self.bow_shoot = False
         self.scroll = False
+
         # Настройки основного окна
         self.setGeometry(1300, 120, 510, 370)
 
@@ -41,9 +42,11 @@ class MainWindow(QMainWindow):
         self.tab_hot_keys.signal_start_thread_auto_join.connect(self.run_check_restart)
         self.tab_hot_keys.signal_command_eat.connect(self.start_command_eat)
         self.tab_hot_keys.signal_command_lvl.connect(self.start_command_lvl)
+        self.tab_hot_keys.signal_off_macro.connect(self.stop_all_macro)
 
         # Создание таба с настройками координат
         self.tab_join_coords = tab_join_coords()
+        self.tab_join_coords.signal_click_coord.connect(self.start_click_coord)
 
         # Создание таба с логами
         self.tab_logs = tab_logs()
@@ -68,7 +71,7 @@ class MainWindow(QMainWindow):
         self.tab_join_coords.image_compare.setPixmap(pixmap2)
 
     def add_logs_text(self, new_text):
-
+        # Добавление текста в окно с логами
         self.tab_logs.label_logs.append(new_text)
 
     def create_all_thread(self):
@@ -94,6 +97,10 @@ class MainWindow(QMainWindow):
         self.thread_command_eat = Macros_eat_command()
         # Поток для команды /lvl
         self.thread_command_lvl = Macros_lvl_command()
+        # Поток для координаты при клике
+        self.thread_click_coord = Macros_coord_click()
+        self.thread_click_coord.signal_change_text.connect(
+            lambda x: self.tab_join_coords.Check_coords_line_edit.setText(x))
         print('ALL_TH: Все потоки были созданы')
 
     def run_check_restart(self):
@@ -109,6 +116,7 @@ class MainWindow(QMainWindow):
     def add_all_hotkeys(self):
         print('Hot_Key: Подгрузка хоткеев')
         var_count_hotkey = 0
+        # Create shortcut keys
         # Нужно, чтобы хоткеи не стакались и норм обновлялись
         unhook_all()
         try:
@@ -136,7 +144,7 @@ class MainWindow(QMainWindow):
             print('MACROS: Начинаю юзать команду /eat')
             self.thread_command_eat.start()
         elif self.thread_command_eat.isRunning():
-            print('MACROS: Начинаю юзать команду /eat')
+            print('MACROS: Прекращаю юзать команду /eat')
             self.thread_command_eat.terminate()
 
     def start_command_lvl(self):
@@ -144,41 +152,65 @@ class MainWindow(QMainWindow):
             print('MACROS: Начинаю юзать команду /lvl')
             self.thread_command_lvl.start()
         elif self.thread_command_lvl.isRunning():
-            print('MACROS: Начинаю юзать команду /lvl')
+            print('MACROS: Прекращаю юзать команду /lvl')
             self.thread_command_lvl.terminate()
+
+    def start_click_coord(self):
+        if not self.thread_click_coord.isRunning():
+            print('MACROS: Начинаю юзать клик координаты')
+            self.thread_click_coord.start()
+        elif self.thread_click_coord.isRunning():
+            print('MACROS: Прекращаю юзать клик координаты')
+            self.thread_click_coord.terminate()
 
     def start_right_click(self):
         if not self.thread_right_click.isRunning():
             print('MACROS: Начинаю кликать ПКМ')
+            File.play_sound(directory='on_sound.mp3')
             self.thread_right_click.start()
+            self.tab_hot_keys.right_click_edit.setStyleSheet(Style.pushbutton_Run_style)
         elif self.thread_right_click.isRunning():
             print('MACROS: Перестаю кликать ПКМ')
+            File.play_sound(directory='off_sound.mp3')
             self.thread_right_click.terminate()
+            self.tab_hot_keys.right_click_edit.setStyleSheet(Style.pushbutton_UNblock_style)
 
     def start_left_click(self):
         if not self.thread_left_click.isRunning():
             print('MACROS: Начинаю кликать ЛКМ')
+            File.play_sound(directory='on_sound.mp3')
             self.thread_left_click.start()
+            self.tab_hot_keys.left_click_edit.setStyleSheet(Style.pushbutton_Run_style)
         elif self.thread_left_click.isRunning():
             print('MACROS: Перестаю кликать ЛКМ')
+            File.play_sound(directory='off_sound.mp3')
             self.thread_left_click.terminate()
+            self.tab_hot_keys.left_click_edit.setStyleSheet(Style.pushbutton_UNblock_style)
 
     def start_bow_shoot(self):
         if not self.thread_bow_shoot.isRunning():
             print('MACROS: Начинаю стрелять')
+            File.play_sound(directory='on_sound.mp3')
             self.thread_bow_shoot.start()
+            self.tab_hot_keys.bow_shoot_edit.setStyleSheet(Style.pushbutton_Run_style)
         elif self.thread_bow_shoot.isRunning():
             print('MACROS: Перестаю стрелять')
+            File.play_sound(directory='off_sound.mp3')
             self.thread_bow_shoot.terminate()
             click(button='right')
+            self.tab_hot_keys.bow_shoot_edit.setStyleSheet(Style.pushbutton_UNblock_style)
 
     def start_scroll_slots(self):
         if not self.thread_scroll_slots.isRunning():
             print('MACROS: Запускаю скролл слотов')
+            File.play_sound(directory='on_sound.mp3')
             self.thread_scroll_slots.start()
+            self.tab_hot_keys.scroll_slots_edit.setStyleSheet(Style.pushbutton_Run_style)
         elif self.thread_scroll_slots.isRunning():
             print('MACROS: Офаю скролл слотов')
+            File.play_sound(directory='off_sound.mp3')
             self.thread_scroll_slots.terminate()
+            self.tab_hot_keys.scroll_slots_edit.setStyleSheet(Style.pushbutton_UNblock_style)
 
     def stop_all_macro(self, check='False'):
         if check == 'True':
@@ -186,15 +218,23 @@ class MainWindow(QMainWindow):
             if self.thread_right_click.isRunning():
                 print('MACROS: ПКМ был запущен')
                 self.right_click = True
+                # Для визуала
+                self.tab_hot_keys.right_click_edit.setStyleSheet(Style.pushbutton_UNblock_style)
             if self.thread_left_click.isRunning():
                 print('MACROS: ЛКМ был запущен')
                 self.left_click = True
+                # Для визуала
+                self.tab_hot_keys.left_click_edit.setStyleSheet(Style.pushbutton_UNblock_style)
             if self.thread_bow_shoot.isRunning():
                 print('MACROS: Лук был запущен')
                 self.bow_shoot = True
+                # Для визуала
+                self.tab_hot_keys.bow_shoot_edit.setStyleSheet(Style.pushbutton_UNblock_style)
             if self.thread_scroll_slots.isRunning():
                 print('MACROS: Скролл был запущен')
                 self.scroll = True
+                # Для визуала
+                self.tab_hot_keys.scroll_slots_edit.setStyleSheet(Style.pushbutton_UNblock_style)
         print('ALL_TH: ОФАЮ ВСЕ ПОТОКИ')
         self.thread_right_click.terminate()
         self.thread_left_click.terminate()
@@ -205,12 +245,16 @@ class MainWindow(QMainWindow):
         print('MACROS: Запуск макросов после рестарта')
         if self.right_click:
             self.start_right_click()
+            self.tab_hot_keys.right_click_edit.setStyleSheet(Style.pushbutton_Run_style)
         if self.left_click:
             self.start_left_click()
+            self.tab_hot_keys.left_click_edit.setStyleSheet(Style.pushbutton_Run_style)
         if self.bow_shoot:
             self.start_bow_shoot()
+            self.tab_hot_keys.bow_shoot_edit.setStyleSheet(Style.pushbutton_Run_style)
         if self.scroll:
             self.start_scroll_slots()
+            self.tab_hot_keys.scroll_slots_edit.setStyleSheet(Style.pushbutton_Run_style)
         self.right_click = False
         self.left_click = False
         self.bow_shoot = False
