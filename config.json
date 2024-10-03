@@ -2,27 +2,35 @@
     "join_coords": {
         "КОМЕНТАРИЙ": "Координаты для автовхода, x и y",
         "go_to_menu": "950 570",
-        "refresh": "920 1000",
+        "refresh": "920 965",
         "server": "860 400",
-        "join": "790 960"
+        "join": "790 965"
     },
     "keyboards": {
         "КОМЕНТАРИЙ": "Если хотите, чтобы хоткей не работал назовите его 'None'",
-        "left_click": "None",
-        "scroll_slots": "None",
-        "bow_shoot": "None",
-        "right_click": "None"
+        "left_click": "g",
+        "scroll_slots": "f",
+        "bow_shoot": "a",
+        "right_click": "z"
     },
     "settings": {
         "КОМЕНТАРИЙ": "Настраивайте время в секундах",
         "count_slots": "4",
         "time_on_slot": "1",
         "screen_time": "5",
-        "time_on_join": "3"
+        "time_on_join": "5"
     },
     "screens_coords": {
         "КОМЕНТАРИЙ": "Картинка настраивается x y w h (w - длинна; h - высота)",
         "sreenshot_menu": "760 535 400 45",
         "screenshot_item": "1863 1010 20 20"
+    },
+    "chekboxs": {
+        "left_click_checkbox": true,
+        "scroll_slots_checkbox": true,
+        "bow_shoot_checkbox": true,
+        "right_click_checkbox": true,
+        "command_eat_checkbox": true,
+        "command_lvl_checkbox": true
     }
 }
